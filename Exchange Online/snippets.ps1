@@ -27,3 +27,17 @@ Get-Mailbox | Get-MailboxPermission -User $useridentity
 
 # Getting a list of all delegate mailbox permissions for all users
 get-mailbox | get-mailboxpermission | where-object -Property User -ne "NT AUTHORITY\SELF"
+
+
+# Mass update CAS(client access settings) mailbox settings.
+# This example disables MAPI for all mailboxes in a tenant, with a confirmation
+# for every mailbox. Could also be used to enable/disable SMTP or other clients
+Get-CASMailbox -Filter {MapiEnabled -eq "true"} | Select-Object @{n = "Identity"; e = {$_.primarysmtpaddress}} | Set-CASMailbox -MapiEnabled $false -confirm
+# You can use the following command to check all the available CAS settings and
+# what they are set to for a specific mailbox
+Get-CASMailbox -Identity username
+
+
+# Give a user delegate access to ALL user mailboxes in an org
+$username = superuser@company.org
+Get-Mailbox -ResultSize unlimited -Filter {(RecipientTypeDetails -eq 'UserMailbox') -and (Alias -ne 'Admin')} | Add-MailboxPermission -User $username -AccessRights fullaccess -InheritanceType all
