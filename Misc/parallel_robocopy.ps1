@@ -3,7 +3,7 @@
 # This script was found at
 # https://support.zadarastorage.com/hc/en-us/articles/213024806-How-to-Run-Robocopy-in-Parallel
 # I have adjusted robocopy parameters to be optimized for migrating a file share
-# and keeping all NTFS permissions
+# and keeping all NTFS permissions. I have also adjusted some of the script for readability
 #
 # This script runs robocopy jobs in parallel by increasing the number of outstanding i/o's to the copy process. Even though you can
 # change the number of threads using the "/mt:#" parameter, your backups will run faster by adding two or more jobs to your
@@ -42,31 +42,31 @@ $dest = "X:\"
 #
 $log = "c:\robo\Logs\"
 mkdir $log
-$files = ls $src
-$files | %{
-$ScriptBlock = {
-param($name, $src, $dest, $log)
-$log += "\$name-$(get-date -f yyyy-MM-dd-mm-ss).log"
-robocopy $src$name $dest$name /MT:16 /R:1 /W:1 /B /MIR /IT /COPY:DATSO /DCOPY:DAT /NP /NFL /NDL /XD "System Volume Information" > $log
-Write-Host $src$name " completed"
- }
-$j = Get-Job -State "Running"
-while ($j.count -ge $max_jobs) 
-{
- Start-Sleep -Milliseconds 500
- $j = Get-Job -State "Running"
+$files = Get-ChildItem $src
+$files | ForEach-Object{
+    $ScriptBlock = {
+        param($name, $src, $dest, $log)
+        $log += "\$name-$(get-date -f yyyy-MM-dd-mm-ss).log"
+        robocopy $src$name $dest$name /MT:16 /R:1 /W:1 /B /MIR /IT /COPY:DATSO /DCOPY:DAT /NP /NFL /NDL /XD "System Volume Information" > $log
+        Write-Host $src$name " completed"
+    }
+    $j = Get-Job -State "Running"
+    while ($j.count -ge $max_jobs) 
+    {
+        Start-Sleep -Milliseconds 500
+        $j = Get-Job -State "Running"
+    }
+    Get-job -State "Completed" | Receive-job
+    Remove-job -State "Completed"
+    Start-Job $ScriptBlock -ArgumentList $_,$src,$dest,$log
 }
- Get-job -State "Completed" | Receive-job
- Remove-job -State "Completed"
-Start-Job $ScriptBlock -ArgumentList $_,$src,$dest,$log
- }
 #
 # No more jobs to process. Wait for all of them to complete
 #
 
 While (Get-Job -State "Running") { Start-Sleep 2 }
 Remove-Job -State "Completed" 
-  Get-Job | Write-host
+Get-Job | Write-host
 
 $tend = get-date
 
