@@ -43,4 +43,4 @@ $username = superuser@company.org
 Get-Mailbox -ResultSize unlimited -Filter {(RecipientTypeDetails -eq 'UserMailbox') -and (Alias -ne 'Admin')} | Add-MailboxPermission -User $username -AccessRights fullaccess -InheritanceType all
 
 # Add a sender or domain to ALL users safe senders list to allow automatic picture downloads
-Get-Mailbox -ResultSize Unlimited | Set-MailboxJunkEmailConfiguration -TrustedSendersAndDomains @{Add="help@it5280.com"}
+Get-Mailbox -ResultSize Unlimited | Set-MailboxJunkEmailConfiguration -TrustedSendersAndDomains @{Add="help@itcompany.com"}
