@@ -41,3 +41,6 @@ Get-CASMailbox -Identity username
 # Give a user delegate access to ALL user mailboxes in an org
 $username = superuser@company.org
 Get-Mailbox -ResultSize unlimited -Filter {(RecipientTypeDetails -eq 'UserMailbox') -and (Alias -ne 'Admin')} | Add-MailboxPermission -User $username -AccessRights fullaccess -InheritanceType all
+
+# Get the organization default authentication policy. Can be used to audit basic authentication
+Get-AuthenticationPolicy -Identity (Get-OrganizationConfig | Select -ExpandProperty DefaultAuthenticationPolicy)
