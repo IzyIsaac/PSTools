@@ -42,5 +42,8 @@ Get-CASMailbox -Identity username
 $username = superuser@company.org
 Get-Mailbox -ResultSize unlimited -Filter {(RecipientTypeDetails -eq 'UserMailbox') -and (Alias -ne 'Admin')} | Add-MailboxPermission -User $username -AccessRights fullaccess -InheritanceType all
 
+# Get the organization default authentication policy. Can be used to audit basic authentication
+Get-AuthenticationPolicy -Identity (Get-OrganizationConfig | Select -ExpandProperty DefaultAuthenticationPolicy)
+
 # Add a sender or domain to ALL users safe senders list to allow automatic picture downloads
 Get-Mailbox -ResultSize Unlimited | Set-MailboxJunkEmailConfiguration -TrustedSendersAndDomains @{Add="help@itcompany.com"}
